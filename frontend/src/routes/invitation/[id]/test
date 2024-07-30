@@ -1,0 +1,243 @@
+
+<script lang="ts">
+	import Icon from '@iconify/svelte';
+	import * as Form from '$lib/components/ui/form';
+	import { Input } from '$lib/components/ui/input';
+	import { type SuperValidated, type Infer, superForm } from 'sveltekit-superforms';
+	import { zodClient } from 'sveltekit-superforms/adapters';
+	import {
+		registerFormSchema,
+		type RegisterFormSchema
+	} from '$lib/components/connection/schema-signup';
+	import type { User } from '$lib/types';
+
+	export let data: {
+		invite: { initiator: User };
+		form: SuperValidated<Infer<RegisterFormSchema>>;
+	};
+
+	let step = 0;
+
+	const form = superForm(data.form, {
+		validators: zodClient(registerFormSchema),
+		dataType: 'json',
+		multipleSubmits: 'prevent'
+	});
+
+	const { form: formData, enhance, errors } = form;
+
+	let initiator = data.invite.initiator;
+
+	let bannerBlur: HTMLElement;
+	let bgForm: HTMLElement;
+	let invitationText: HTMLElement;
+	let invitationMessage: HTMLElement;
+
+	let stepButton: HTMLButtonElement;
+
+	function goThroughStep() {
+		switch (step) {
+			case 0:
+				bannerBlur.style.opacity = '0%';
+				invitationText.style.opacity = '0%';
+				invitationMessage.style.opacity = '0%';
+				bgForm.style.opacity = '100%';
+				stepButton.textContent = 'Next';
+				step++;
+				break;
+			case 1:
+				step++;
+				break;
+			case 2:
+				step++;
+				break;
+			case 3:
+				step++;
+				break;
+		}
+	}
+</script>
+
+<div class="w-full h-full flex justify-center items-center">
+	{#if data.invite}
+		<div class="w-fit relative">
+			<div class="rounded-xl overflow-hidden">
+				<p
+					bind:this={invitationText}
+					class="absolute z-10 text-white/30 left-5 bottom-4 transition-opacity"
+				>
+					Sent by {initiator.display_name}
+				</p>
+				<p
+					bind:this={invitationMessage}
+					class="absolute z-10 text-white/30 left-5 top-4 flex gap-x-1 items-center transition-opacity"
+				>
+					<Icon icon="ph:envelope-duotone" height={26} width={19} />
+					New invitation
+				</p>
+				<div
+					bind:this={bgForm}
+					class="h-full w-full left-0 top-0 absolute bg-zinc-850 rounded-2xl transition-opacity opacity-0 z-[2]"
+				></div>
+				<form method="POST" use:enhance class="flex flex-col gap-5 min-w-[20rem]">
+					{#if step === 1}
+						<Form.Field
+							{form}
+							name="email"
+							class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-2/3 w-[16rem] z-[5]"
+						>
+							<Form.Control let:attrs>
+								<div class="flex space-x-2 items-end">
+									<Form.Label
+										class="text-zinc-500 after:content-['-'] gap-x-2 flex items-center after:opacity-0 data-[fs-error]:after:opacity-100 text-base leading-none"
+										>Email</Form.Label
+									>
+									<Form.FieldErrors class="leading-none font-normal" />
+								</div>
+								<div class="relative">
+									<Icon
+										icon="ph:envelope-duotone"
+										height={22}
+										width={22}
+										class="text-zinc-500 absolute top-1/2 -translate-y-1/2 left-3"
+									/>
+									<Input
+										{...attrs}
+										bind:value={$formData.email}
+										class="pl-11 !mt-0 data-[fs-error]:border-destructive data-[fs-error]:ring-destructive"
+									/>
+								</div>
+							</Form.Control>
+						</Form.Field>
+					{/if}
+					{#if step === 2}
+						<Form.Field
+							{form}
+							name="username"
+							class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-2/3 w-[16rem] z-[5]"
+						>
+							<Form.Control let:attrs>
+								<div class="flex space-x-2 items-center">
+									<Form.Label
+										class="text-zinc-500 after:content-['-'] gap-x-2 flex items-center after:opacity-0 data-[fs-error]:after:opacity-100 text-base leading-none"
+										>Username</Form.Label
+									>
+									<Form.FieldErrors class="leading-none font-normal" />
+								</div>
+								<div class="relative">
+									<Icon
+										icon="ph:at-duotone"
+										height={22}
+										width={22}
+										class="text-zinc-500 absolute top-1/2 -translate-y-1/2 left-3"
+									/>
+									<Input
+										{...attrs}
+										bind:value={$formData.username}
+										class="pl-11 !mt-0 data-[fs-error]:border-destructive data-[fs-error]:ring-destructive"
+									/>
+								</div>
+							</Form.Control>
+						</Form.Field>
+					{/if}
+					{#if step === 3}
+						<Form.Field
+							{form}
+							name="display_name"
+							class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-2/3 w-[16rem] z-[5]"
+						>
+							<Form.Control let:attrs>
+								<div class="flex space-x-2 items-center">
+									<Form.Label
+										class="text-zinc-500 after:content-['-'] gap-x-2 flex items-center after:opacity-0 data-[fs-error]:after:opacity-100 text-base leading-none"
+										>Display Name</Form.Label
+									>
+									<Form.FieldErrors class="leading-none font-normal" />
+								</div>
+								<div class="relative">
+									<Icon
+										icon="ph:user-duotone"
+										height={22}
+										width={22}
+										class="text-zinc-500 absolute top-1/2 -translate-y-1/2 left-3"
+									/>
+									<Input
+										{...attrs}
+										bind:value={$formData.display_name}
+										class="pl-11 !mt-0 data-[fs-error]:border-destructive data-[fs-error]:ring-destructive"
+									/>
+								</div>
+							</Form.Control>
+						</Form.Field>
+					{/if}
+					{#if step === 4}
+						<Form.Field
+							{form}
+							name="password"
+							class="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-2/3 w-[16rem] z-[5]"
+						>
+							<Form.Control let:attrs>
+								<div class="flex space-x-2 items-center">
+									<Form.Label
+										class="text-zinc-500 after:content-['-'] gap-x-2 flex items-center after:opacity-0 data-[fs-error]:after:opacity-100 text-base leading-none"
+										>Password</Form.Label
+									>
+									<Form.FieldErrors class="leading-none font-normal" />
+								</div>
+								<div class="relative">
+									<Icon
+										icon="ph:lock-key-duotone"
+										height={22}
+										width={22}
+										class="text-zinc-500 absolute top-1/2 -translate-y-1/2 left-3"
+									/>
+									<Input
+										{...attrs}
+										bind:value={$formData.password}
+										type="password"
+										class="pl-11 !mt-0 data-[fs-error]:border-destructive data-[fs-error]:ring-destructive"
+									/>
+								</div>
+							</Form.Control>
+						</Form.Field>
+						<Form.Button class="absolute z-[4] left-1/2 -translate-x-1/2 bottom-4"
+							>Sign up</Form.Button
+						>
+					{/if}
+					{#if $errors.unexpected}<span class="text-destructive">{$errors.unexpected}</span>{/if}
+				</form>
+				{#if step !== 4}
+					<button
+						class="absolute z-10 text-white bg-white/5 px-2 py-1 rounded-lg right-5 bottom-4 hover:bg-white/15 transition-colors"
+						bind:this={stepButton}
+						on:click={goThroughStep}>Use</button
+					>
+				{/if}
+				<img src={initiator.banner} alt="banner" class="max-w-[25rem] rounded-[1.2rem]" />
+				<div class="w-full absolute h-full progressive-blur rounded-2xl z-[0]"></div>
+			</div>
+			<img
+				bind:this={bannerBlur}
+				class="w-full max-w-none h-full absolute left-0 top-0 object-cover rounded-xl blur-xl transform-gpu z-[-1] transition-opacity"
+				src={initiator.banner}
+				alt=""
+			/>
+		</div>
+	{/if}
+</div>
+
+<style lang="postcss">
+	.progressive-blur {
+		pointer-events: none;
+		backdrop-filter: blur(40px);
+		-webkit-backdrop-filter: blur(40px);
+		inset: 0;
+
+		mask-image: radial-gradient(50% 50% at 50% 50%, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 1) 100%);
+		-webkit-mask-image: radial-gradient(
+			48% 48% at 50% 50%,
+			rgba(0, 0, 0, 0) 0%,
+			rgba(0, 0, 0, 1) 100%
+		);
+	}
+</style>
